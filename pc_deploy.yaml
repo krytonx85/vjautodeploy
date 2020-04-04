@@ -1,0 +1,6 @@
+---
+- name: PC_Deploy
+  hosts: PE
+  tasks:
+  - include_role:
+     name: PC

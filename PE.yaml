@@ -1,0 +1,10 @@
+all:
+ hosts:
+  PE:
+   ansible_host: "10.134.86.70" 
+   ansible_user: "nutanix" 
+   ansible_ssh_pass: "nx2Tech100!"
+   api_username: "admin"
+   api_password: "nx2Tech100!"
+   pc_ip: "10.134.87.69"
+   pc_network_name: "Rx-Automation-Network"

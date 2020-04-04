@@ -1,0 +1,54 @@
+#- debug:
+#
+#   var: |
+#        api_path is {{ endpoint_api_path }} 
+#        endpoint method is {{ endpoint_api_method }} 
+#        api body is: {{ endpoint_api_body }}
+#        api task is: {{ endpoint_api_task }}
+#        endpoint is: {{ endpoint_ip }}
+##
+- name: Submitting Task
+  uri:
+   url: https://{{ endpoint_ip }}:9440/{{ endpoint_api_path }}
+   url_username: "{{ api_username }}"
+   url_password: "{{ api_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+   body_format: json
+   method: "{{ endpoint_api_method | string }}"
+   body: "{{ endpoint_api_body }}"
+   follow_redirects: all
+   status_code: [200,202]
+  debugger: on_failed
+  register: task_status
+
+
+- set_fact:
+   task_uuid: "{{ task_status.json | to_json | from_json  | json_query('task_uuid') }}"
+
+- debug:
+   msg: "http//{{ endpoint_ip }}9440/{{ endpoint_api_task }}/{{ task_uuid }}"
+
+- name: Waiting for Deployment to complete
+  uri:
+   url: https://{{ endpoint_ip }}:9440/{{ endpoint_api_task }}/{{ task_uuid }}
+   url_username: "{{ api_username }}"
+   url_password: "{{ api_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+   follow_redirects: all
+  register: task_progress
+  until: task_progress.json | to_json | from_json | json_query('progress_status')| upper is regex('SUCCEEDED|FAILED|ABORTED|SUSPENDED')
+  failed_when: task_progress.json | to_json | from_json | json_query('progress_status')|upper is  regex ('FAILED|ABORTED|SUSPENDED')
+  retries: 300
+  delay: 20
+  debugger: on_failed
+
+- debug:
+   msg: Task status is  "{{ task_progress.json | to_json | from_json |  json_query('progress_status')| upper }}"
+- debug:
+   msg: Is task in progress ?  "{{ task_progress.json | to_json | from_json |  json_query('progress_status')|upper is regex('QUEUED|RUNNING') }}"
+
+

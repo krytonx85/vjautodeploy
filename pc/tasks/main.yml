@@ -1,0 +1,170 @@
+- name: Get Image List
+  uri:
+   url: https://127.0.0.1:9440/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/softwares?_={{ ansible_date_time.epoch }}
+   url_username: "{{ api_username }}"
+   url_password: "{{ api_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+  register: pc_downloads
+
+
+- name: Get network  List
+  uri:
+   url: https://127.0.0.1:9440/PrismGateway/services/rest/v2.0/networks
+   url_username: "{{ api_username }}"
+   url_password: "{{ api_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+  register: network_list
+
+- debug:
+   msg: network name is "{{ pc_network_name }}"
+
+- debug:
+   msg: network list is "{{ network_list.json }}"
+
+
+- name: get net uuid
+  set_fact: 
+   network_uuid: "{{ network_list.json | to_json | from_json | json_query(queryfilter) }}"
+  vars:
+   queryfilter: "entities[?contains(name,'{{ pc_network_name }}')].uuid | [0]"
+
+- debug:
+   msg: network uuid for "{{pc_network_name}}" is {{ network_uuid }}
+
+- set_fact:
+   pc_latest_dict: "{{ pc_downloads.json | to_json| from_json  | json_query(queryfilter) }}"
+  vars:
+    queryfilter: "entities[?contains(name, '5.16')].{name: name} |max_by(@, &name)"
+
+- debug:
+   msg: This is latest version to be deployed "{{ pc_latest_dict }}"
+
+
+- name: Get PC Registered already
+  uri:
+   url: https://127.0.0.1:9440/PrismGateway/services/rest/v1/multicluster/cluster_external_state?__{{ ansible_date_time.epoch }}
+   url_username: "{{ api_username }}"
+   url_password: "{{ api_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+  register: pc_registered
+
+
+- set_fact:
+   pc_version_to_download: "{{ pc_latest_dict.name }}"
+  
+- debug:
+   msg: This is the version only value  {{ pc_version_to_download }}
+
+
+- set_fact:
+   pc_deploy_def:
+    resources:
+     version: "{{ pc_version_to_download }}"
+     should_auto_register: false
+     pc_vm_list:
+     - vm_name: "{{ [ 'PC' , 100 | random() ] | join( '-' ) }}"
+       num_sockets: 4
+       data_disk_size_bytes: 536870912000
+       memory_size_bytes: 17179869184
+       dns_server_ip_list: "{{ ansible_dns.nameservers }}"
+       nic_list:
+       - ip_list:
+         - "{{ pc_ip }}"
+         network_configuration:
+          network_uuid: "{{ network_uuid }}"
+          subnet_mask: "255.255.252.0"
+          default_gateway: "10.134.84.1"
+
+   
+   
+
+- debug: 
+   msg: Deployment spec is "{{ pc_deploy_def }}"
+
+- set_fact:
+   pc_deploy_def_json: "{{ pc_deploy_def| to_json()}}"
+
+- name: Deploying PC
+  include_tasks:
+   file: submit_task.yaml
+  vars:
+   endpoint_ip: "{{ ansible_host }}"
+   endpoint_api_path: "api/nutanix/v3/prism_central"
+   endpoint_api_method: "POST"
+   endpoint_api_body: '{{ pc_deploy_def_json }}'
+   endpoint_api_task: "PrismGateway/services/rest/v2.0/tasks"
+
+- set_fact:
+   pc_register_def:
+    username: "admin"
+    password": "nutanix/4u"
+    port: null
+    ipAddresses": 
+    - "{{ pc_ip }}"
+
+
+- debug:
+   msg: register spec is "{{ pc_register_def }}"
+
+- set_fact:
+   pc_register_def_json: "{{ pc_register_def| to_json()}}"
+
+
+
+- name: Registering PE to PC
+  include_tasks:
+   file: submit_task.yaml
+  vars:
+   endpoint_ip: "{{ ansible_host }}"
+   endpoint_api_path: "PrismGateway/services/rest/v1/multicluster/prism_central/register"
+   endpoint_api_method: "POST"
+   endpoint_api_body: '{{ pc_register_def_json }}'
+   endpoint_api_task: "PrismGateway/services/rest/v2.0/tasks"
+
+
+#- name: Deploying PC
+#  uri:
+#   url: https://{{ ansible_host }}:9440/api/nutanix/v3/prism_central  
+#   url_username: "{{ api_username }}"
+#   url_password: "{{ api_password }}"
+#   validate_certs: false
+#   force_basic_auth: true
+#   return_content: true
+#   body_format: json
+#   method: POST
+#   body: "{{ pc_deploy_def_json }}"
+#   follow_redirects: all   
+#   status_code: [200,202]
+#  register: pc_deploy_status
+#
+
+#- set_fact: 
+#   pc_deploy_task: "{{ pc_deploy_status.json | to_json | from_json  | json_query('task_uuid') }}"
+#
+#- debug:
+#   msg: the deploy task uuid is  "{{ pc_deploy_task }}"
+#
+#- name: Waiting for Deployment to complete
+#  uri: 
+#   url: https://{{ ansible_host }}:9440/PrismGateway/services/rest/v2.0/tasks/{{ pc_deploy_task }}
+#   url_username: "{{ api_username }}"
+#   url_password: "{{ api_password }}"
+#   validate_certs: false
+#   force_basic_auth: true
+#   return_content: true
+#   follow_redirects: all
+#  register: pc_deploy_progress
+#  until:  pc_deploy_progress.json | to_json | from_json | json_query('progress_status')| upper is regex('SUCCEEDED|FAILED|ABORTED|SUSPENDED')
+#  failed_when: pc_deploy_progress.json | to_json | from_json | json_query('progress_status')|upper is  regex ('FAILED|ABORTED|SUSPENDED')
+#  retries: 300
+#  delay: 20 
+#- debug:
+#   msg: Deploy regex  "{{ pc_deploy_progress.json | to_json | from_json |  json_query('progress_status')| upper }}" 
+#- debug:
+#   msg: Is Deploy in progress ?  "{{ pc_deploy_progress.json | to_json | from_json |  json_query('progress_status')|upper is regex('QUEUED|RUNNING') }}"
