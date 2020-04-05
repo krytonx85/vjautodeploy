@@ -103,9 +103,9 @@
 - set_fact:
    pc_register_def:
     username: "admin"
-    password": "nutanix/4u"
+    password: "Nutanix/4u"
     port: null
-    ipAddresses": 
+    ipAddresses: 
     - "{{ pc_ip }}"
 
 
