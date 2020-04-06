@@ -27,7 +27,7 @@
 - set_fact:
    task_uuid: "{{ task_status.json | to_json | from_json | lower | json_query('task_uuid') }}"
    debugger: always
-   
+
 
 - debug:
    msg: "http//{{ endpoint_ip }}9440/{{ endpoint_api_task }}/{{ task_uuid }}"
@@ -42,12 +42,12 @@
    return_content: true
    follow_redirects: all
    method: 'GET'
-  register: task_progress
   until: task_progress.json | to_json | from_json | json_query('progress_status')| upper is regex('SUCCEEDED|FAILED|ABORTED|SUSPENDED')
   failed_when: task_progress.json | to_json | from_json | json_query('progress_status')|upper is  regex ('FAILED|ABORTED|SUSPENDED')
   retries: 300
   delay: 20
   debugger: on_failed
+  register: task_progress
 
 - debug:
    msg: Task status is  "{{ task_progress.json | to_json | from_json |  json_query('progress_status')| upper }}"
