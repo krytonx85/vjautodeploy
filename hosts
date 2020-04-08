@@ -8,3 +8,5 @@ all:
    api_password: "nx2Tech100!"
    pc_ip: "10.134.87.69"
    pc_network_name: "Rx-Automation-Network"
+   pc_ntp_list:
+   - "0.au.pool.ntp.org"

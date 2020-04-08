@@ -33,7 +33,7 @@
    queryfilter: "entities[?contains(name,'{{ pc_network_name }}')].uuid | [0]"
 
 - debug:
-   msg: network uuid for "{{pc_network_name}}" is {{ network_uuid }}
+   msg: network uuid for PC Network Selected  "{{pc_network_name}}" is {{ network_uuid }}
 
 - set_fact:
    pc_latest_dict: "{{ pc_downloads.json | to_json| from_json  | json_query(queryfilter) }}"
@@ -162,43 +162,5 @@
     - pc_register_step
 
 
-#- name: Deploying PC
-#  uri:
-#   url: https://{{ ansible_host }}:9440/api/nutanix/v3/prism_central  
-#   url_username: "{{ api_username }}"
-#   url_password: "{{ api_password }}"
-#   validate_certs: false
-#   force_basic_auth: true
-#   return_content: true
-#   body_format: json
-#   method: POST
-#   body: "{{ pc_deploy_def_json }}"
-#   follow_redirects: all   
-#   status_code: [200,202]
-#  register: pc_deploy_status
-#
-
-#- set_fact: 
-#   pc_deploy_task: "{{ pc_deploy_status.json | to_json | from_json  | json_query('task_uuid') }}"
-#
-#- debug:
-#   msg: the deploy task uuid is  "{{ pc_deploy_task }}"
-#
-#- name: Waiting for Deployment to complete
-#  uri: 
-#   url: https://{{ ansible_host }}:9440/PrismGateway/services/rest/v2.0/tasks/{{ pc_deploy_task }}
-#   url_username: "{{ api_username }}"
-#   url_password: "{{ api_password }}"
-#   validate_certs: false
-#   force_basic_auth: true
-#   return_content: true
-#   follow_redirects: all
-#  register: pc_deploy_progress
-#  until:  pc_deploy_progress.json | to_json | from_json | json_query('progress_status')| upper is regex('SUCCEEDED|FAILED|ABORTED|SUSPENDED')
-#  failed_when: pc_deploy_progress.json | to_json | from_json | json_query('progress_status')|upper is  regex ('FAILED|ABORTED|SUSPENDED')
-#  retries: 300
-#  delay: 20 
-#- debug:
-#   msg: Deploy regex  "{{ pc_deploy_progress.json | to_json | from_json |  json_query('progress_status')| upper }}" 
-#- debug:
-#   msg: Is Deploy in progress ?  "{{ pc_deploy_progress.json | to_json | from_json |  json_query('progress_status')|upper is regex('QUEUED|RUNNING') }}"
+- name: Post Registration PC Configuration
+  import_tasks: pc_postdeploy.yaml

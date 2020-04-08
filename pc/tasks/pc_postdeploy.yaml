@@ -1,0 +1,19 @@
+
+
+- name: configure NTP for PC
+  uri: 
+   url: https://{{ pc_ip }}:9440/PrismGateway/services/rest/v1/cluster/ntp_servers/add_list
+   url_username: "admin"
+   url_password: "SREs4eva!"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+   body_format: json
+   method: "POST"
+   body: "{{ pc_ntp_list | to_json }}"
+   follow_redirects: all
+   status_code: [200,202]
+  debugger: on_failed
+  register: task_status
+  tags:
+   - post_deploy_pc
