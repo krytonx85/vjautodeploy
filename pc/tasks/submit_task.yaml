@@ -24,16 +24,20 @@
   register: task_status
 
 
+# finding the task uuid key name as different task give a different key - pc deploy gives task_uuid, while pc register taskUuid
+- set_fact:
+   task_uuid_key_name: "{{ task_status.json | to_json | regex_search('task.?uuid',ignorecase=True, multiline=True) }}" 
+
 - debug:
-   var: task_status.json
+   msg: the task key name is {{ task_uuid_key_name }}
 
 
 - set_fact:
-   task_uuid: "{{ task_status.json | json_query('task_uuid') }}"
-   debugger: always
+   task_uuid: "{{ task_status.json |  to_json | from_json   | json_query(task_uuid_key_name)  }}"
 
-
-
+- debug:
+   msg: the uuid is {{ task_uuid }}
+ 
 
    
 - name: Waiting for Deployment to complete

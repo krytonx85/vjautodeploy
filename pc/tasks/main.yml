@@ -91,7 +91,7 @@
    pc_deploy_def_json: "{{ pc_deploy_def| to_json()}}"
 
 - name: Deploying PC
-  include_tasks:
+  import_tasks:
    file: submit_task.yaml
   vars:
    endpoint_ip: "{{ ansible_host }}"
@@ -100,13 +100,43 @@
    endpoint_api_body: '{{ pc_deploy_def_json }}'
    endpoint_api_task: "PrismGateway/services/rest/v2.0/tasks"
 
+- name: sleep for 60 seconds and continue with play
+  wait_for:
+    timeout: 60
+  delegate_to: localhost
+
+- set_fact:
+   pc_def_password_change:
+    oldPassword: "Nutanix/4u"
+    newPassword: "SREs4eva!"
+
+
+- name: Changing the admin password
+  uri:
+   url: https://{{ pc_ip }}:9440/PrismGateway/services/rest/v1/utils/change_default_system_password
+   url_username: "admin"
+   url_password: "Nutanix/4u"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+   body_format: json
+   method: "POST"
+   body: "{{ pc_def_password_change | to_json }}"
+   follow_redirects: all
+   status_code: [200,202]
+  debugger: on_failed
+ 
+
+
 - set_fact:
    pc_register_def:
-    username: "admin"
-    password: "Nutanix/4u"
+    username: 'admin'
+    password: 'SREs4eva!'
     port: null
     ipAddresses: 
     - "{{ pc_ip }}"
+  tags:
+   - pc_register_step
 
 
 - debug:
@@ -114,11 +144,13 @@
 
 - set_fact:
    pc_register_def_json: "{{ pc_register_def| to_json()}}"
+  tags:
+   - pc_register_step
 
 
 
 - name: Registering PE to PC
-  include_tasks:
+  import_tasks:
    file: submit_task.yaml
   vars:
    endpoint_ip: "{{ ansible_host }}"
@@ -126,6 +158,8 @@
    endpoint_api_method: "POST"
    endpoint_api_body: '{{ pc_register_def_json }}'
    endpoint_api_task: "PrismGateway/services/rest/v2.0/tasks"
+  tags:
+    - pc_register_step
 
 
 #- name: Deploying PC
