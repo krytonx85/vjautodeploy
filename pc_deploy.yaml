@@ -1,0 +1,24 @@
+---
+- name: PC_Deploy
+  hosts: PE
+  tasks:
+  - name: Get PC Registered already
+    uri:
+      url: https://127.0.0.1:9440/PrismGateway/services/rest/v1/multicluster/cluster_external_state?__{{ ansible_date_time.epoch }}
+      url_username: "{{ api_username }}"
+      url_password: "{{ api_password }}"
+      validate_certs: false
+      force_basic_auth: true
+      return_content: true
+    register: pc_registered
+  - debug:
+     msg: pc registration facts  {{ pc_registered }}
+  - import_role:
+     name: PC
+ 
+  - import_role:
+     name: karbon
+    tags:
+      -  karbon_deploy
+    
+     
