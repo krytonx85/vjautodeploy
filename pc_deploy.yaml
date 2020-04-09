@@ -15,3 +15,10 @@
      msg: pc registration facts  {{ pc_registered }}
   - import_role:
      name: PC
+ 
+  - import_role:
+     name: karbon
+    tags:
+      -  karbon_deploy
+    
+     

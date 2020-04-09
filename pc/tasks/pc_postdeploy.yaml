@@ -17,3 +17,62 @@
   register: task_status
   tags:
    - post_deploy_pc
+  
+- name: enable OSS service
+  uri: 
+   url: https://{{ pc_ip }}:9440/api/nutanix/v3/services/oss
+   url_username: "admin"
+   url_password: "SREs4eva!"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+   body_format: json
+   method: "POST"
+   body: '{"state": "ENABLE"}'
+   follow_redirects: all
+   status_code: [200,202]
+  debugger: on_failed
+  register: task_status
+  tags:
+   - post_deploy_pc
+
+- name: enable KARBON service
+  uri: 
+   url: https://{{ pc_ip }}:9440/PrismGateway/services/rest/v1/genesis
+   url_username: "admin"
+   url_password: "SREs4eva!"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+   body_format: json
+   method: "POST"
+   body: '{"value":"{\".oid\":\"ClusterManager\",\".method\":\"enable_service_with_prechecks\",\".kwargs\":{\"service_list_json\":\"{\\\"service_list\\\":[\\\"KarbonUIService\\\",\\\"KarbonCoreService\\\"]}\"}}"}'
+   follow_redirects: all
+   status_code: [200,202]
+  debugger: on_failed
+  register: task_status
+  tags:
+   - post_deploy_pc
+
+
+
+- name: checking OSS service enabled
+  uri: 
+   url: https://{{ pc_ip }}:9440/api/nutanix/v3/services/oss/status?__{{ ansible_date_time.epoch }}
+   url_username: "admin"
+   url_password: "SREs4eva!"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+   body_format: json
+   method: "GET"
+   body: '{"state": "ENABLE"}'
+   follow_redirects: all
+   status_code: [200,202]
+  debugger: on_failed
+  register: task_status
+  until: task_status.json.service_enablement_status  == "ENABLED" 
+  retries: 300
+  delay: 20
+  tags:
+   - post_deploy_pc
