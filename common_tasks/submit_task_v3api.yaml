@@ -1,0 +1,77 @@
+
+- name: Submitting Entity
+  uri:
+   url: https://{{ endpoint_ip }}:9440/{{ endpoint_api_path }}
+   url_username: "{{ endpoint_api_username }}"
+   url_password: "{{ endpoint_api_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: yes
+   body_format: json
+   method: "{{ endpoint_api_method | string }}"
+   body: "{{ endpoint_api_body }}"
+   follow_redirects: all
+   status_code: [200,202]
+  debugger: always
+  register: intent_status
+
+
+- name: Waiting for Entity Submission to complete
+  uri:
+   url: https://{{ endpoint_ip }}:9440/{{ endpoint_api_task }}/{{ intent_status.json.metadata.uuid }}
+   url_username: "{{ endpoint_api_username }}"
+   url_password: "{{ endpoint_api_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: yes
+   follow_redirects: none
+   method: 'GET'
+  register: v3_progress
+  debugger: always
+  until: v3_progress.json|json_query('status.state')|upper is  regex ('COMPLETE')
+  failed_when: v3_progress.json|json_query('status.state')|upper is  regex ('ERROR')
+  retries: 300
+  delay: 20
+
+# - debug:
+#    msg: status of entity upload status {{ v3_progress.json|json_query('status.state')|upper }}
+
+# - debug:
+#    msg: status completed {{ v3_progress.json|json_query('status.state')|upper is  regex ('COMPLETE') }}
+
+
+# - name: sleep for 600 seconds and continue with play
+#   wait_for:
+#     timeout: 60
+#   delegate_to: localhost
+
+# - debug:
+#    msg: status of entity upload status {{ v3_progress.json|json_query('status.state')|upper }}
+
+# - debug:
+#    msg: status completed {{ v3_progress.json|json_query('status.state')|upper is  regex ('COMPLETE') }}
+
+
+
+# - name: sleep for 60 seconds and continue with play
+#   wait_for:
+#     timeout: 60
+#   delegate_to: localhost
+
+# - debug:
+#    msg: status of entity upload status {{ v3_progress.json|json_query('status.state')|upper }}
+
+# - debug:
+#    msg: status completed {{ v3_progress.json|json_query('status.state')|upper is  regex ('COMPLETE') }}
+
+ 
+# - name: sleep for 60 seconds and continue with play
+#   wait_for:
+#     timeout: 60
+#   delegate_to: localhost
+
+# - debug:
+#    msg: status of entity upload status {{ v3_progress.json|json_query('status.state')|upper }}
+
+# - debug:
+#    msg: status completed {{ v3_progress.json|json_query('status.state')|upper is  regex ('COMPLETE') }}

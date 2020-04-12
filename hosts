@@ -1,12 +1,24 @@
 all:
  hosts:
   PE:
-   ansible_host: "10.134.86.70" 
+   ansible_host: "10.134.86.100" 
    ansible_user: "nutanix" 
    ansible_ssh_pass: "nx2Tech100!"
    api_username: "admin"
-   api_password: "nx2Tech100!"
-   pc_ip: "10.134.87.69"
+   pe_password: "nx2Tech100!"
+   pc_ip: "10.134.87.99"
+   pc_password: "SREs4eva!"
    pc_network_name: "Rx-Automation-Network"
    pc_ntp_list:
    - "0.au.pool.ntp.org"
+   nat_vars:
+    centos_image_url: "http://apac-file.sre-labs.nutanix.com/Repo/Mounts/Autodeploy/CentOS7-04282018.qcow2"
+    pv_net_details:
+     dns: "8.8.8.8"
+     network: "192.168.100.0"
+     gateway: "192.168.100.1"
+     prefix: "24"
+     range: "192.168.100.100 192.168.100.200"
+     name: "ansible_net"
+     vlan: "103"
+    

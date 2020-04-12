@@ -4,7 +4,7 @@
   uri: 
    url: https://{{ pc_ip }}:9440/PrismGateway/services/rest/v1/cluster/ntp_servers/add_list
    url_username: "admin"
-   url_password: "SREs4eva!"
+   url_password: "{{ pc_password }}"
    validate_certs: false
    force_basic_auth: true
    return_content: true
@@ -12,8 +12,7 @@
    method: "POST"
    body: "{{ pc_ntp_list | to_json }}"
    follow_redirects: all
-   status_code: [200,202]
-  debugger: on_failed
+   status_code: [200,202]                     
   register: task_status
   tags:
    - post_deploy_pc
@@ -22,7 +21,7 @@
   uri: 
    url: https://{{ pc_ip }}:9440/api/nutanix/v3/services/oss
    url_username: "admin"
-   url_password: "SREs4eva!"
+   url_password: "{{ pc_password }}"
    validate_certs: false
    force_basic_auth: true
    return_content: true
@@ -40,7 +39,7 @@
   uri: 
    url: https://{{ pc_ip }}:9440/PrismGateway/services/rest/v1/genesis
    url_username: "admin"
-   url_password: "SREs4eva!"
+   url_password: "{{ pc_password }}"
    validate_certs: false
    force_basic_auth: true
    return_content: true
@@ -60,12 +59,12 @@
   uri: 
    url: https://{{ pc_ip }}:9440/api/nutanix/v3/services/oss/status?__{{ ansible_date_time.epoch }}
    url_username: "admin"
-   url_password: "SREs4eva!"
+   url_password: "{{ pc_password }}"
    validate_certs: false
    force_basic_auth: true
    return_content: true
    body_format: json
-   method: "GET"
+   method: "POST"
    body: '{"state": "ENABLE"}'
    follow_redirects: all
    status_code: [200,202]

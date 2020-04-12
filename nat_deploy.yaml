@@ -1,0 +1,10 @@
+- name: Nat_Deploy
+  hosts: PE
+  tasks:
+  - import_role:
+     name: nat
+  
+
+
+    
+    

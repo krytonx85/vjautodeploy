@@ -2,7 +2,7 @@
   uri:
    url: https://127.0.0.1:9440/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/softwares?_={{ ansible_date_time.epoch }}
    url_username: "{{ api_username }}"
-   url_password: "{{ api_password }}"
+   url_password: "{{ pe_password }}"
    validate_certs: false
    force_basic_auth: true
    return_content: true
@@ -13,7 +13,7 @@
   uri:
    url: https://127.0.0.1:9440/PrismGateway/services/rest/v2.0/networks
    url_username: "{{ api_username }}"
-   url_password: "{{ api_password }}"
+   url_password: "{{ pe_password }}"
    validate_certs: false
    force_basic_auth: true
    return_content: true
@@ -48,7 +48,7 @@
   uri:
    url: https://127.0.0.1:9440/PrismGateway/services/rest/v1/multicluster/cluster_external_state?__{{ ansible_date_time.epoch }}
    url_username: "{{ api_username }}"
-   url_password: "{{ api_password }}"
+   url_password: "{{ pe_password }}"
    validate_certs: false
    force_basic_auth: true
    return_content: true
@@ -92,13 +92,15 @@
 
 - name: Deploying PC
   import_tasks:
-   file: submit_task.yaml
+   file: "../../common_tasks/submit_task.yaml"
   vars:
    endpoint_ip: "{{ ansible_host }}"
    endpoint_api_path: "api/nutanix/v3/prism_central"
    endpoint_api_method: "POST"
    endpoint_api_body: '{{ pc_deploy_def_json }}'
    endpoint_api_task: "PrismGateway/services/rest/v2.0/tasks"
+   endpoint_api_password: "{{ pe_password }}"
+   endpoint_api_username: "admin"
 
 - name: sleep for 60 seconds and continue with play
   wait_for:
@@ -108,7 +110,7 @@
 - set_fact:
    pc_def_password_change:
     oldPassword: "Nutanix/4u"
-    newPassword: "SREs4eva!"
+    newPassword: "{{ pc_password }}"
 
 
 - name: Changing the admin password
@@ -131,7 +133,7 @@
 - set_fact:
    pc_register_def:
     username: 'admin'
-    password: 'SREs4eva!'
+    password: '{{ pc_password }}'
     port: null
     ipAddresses: 
     - "{{ pc_ip }}"
@@ -151,13 +153,15 @@
 
 - name: Registering PE to PC
   import_tasks:
-   file: submit_task.yaml
+   file: "../../common_tasks/submit_task.yaml"
   vars:
    endpoint_ip: "{{ ansible_host }}"
    endpoint_api_path: "PrismGateway/services/rest/v1/multicluster/prism_central/register"
    endpoint_api_method: "POST"
    endpoint_api_body: '{{ pc_register_def_json }}'
    endpoint_api_task: "PrismGateway/services/rest/v2.0/tasks"
+   endpoint_api_password: "{{ pe_password }}"
+   endpoint_api_username: "admin"
   tags:
     - pc_register_step
 
