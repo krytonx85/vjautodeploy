@@ -1,7 +1,22 @@
+
+- name: Get PE Cluster Details for vm creation
+  uri:
+   url: https://{{ ansible_host }}:9440/PrismGateway/services/rest/v2.0/cluster
+   url_username: "{{ api_username }}"
+   url_password: "{{ pe_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+   body_format: json
+   method: "GET"
+   follow_redirects: all
+   status_code: [200,201,202]
+  debugger: on_failed
+  register: pe_cluster_details
+
 - set_fact:
    vm_deploy_spec:
     spec:
-      description: string
       resources:
         num_threads_per_core: 1
         num_vcpus_per_socket: 2
@@ -9,69 +24,50 @@
         memory_size_mib: 4000
         disk_list:
         - device_properties:
-            device_type: DISK
+            device_type: "DISK"
           data_source_reference:
             is_direct_attach: true
-            kind: image
+            kind: "image"
             uuid: "{{ centos_image_uuid }}"
             name: "ansible_centos"
         nic_list:
         - ip_endpoint_list:
-          - ip_type: "dhcp"
+          - ip_type: "STATIC"
+            ip: "{{ nat_vars.public_net_details.ip }}"
+            prefix_length: "{{ nat_vars.public_net_details.prefix }}"
+            gateway_address_list: "{{ nat_vars.public_net_details.gateway | to_json }}"
           subnet_reference:
-            kind: subnet
-            name: string
-            uuid: string (UUID)
-          model: string
+            kind: "subnet"
+            name: "ansible_network"
+            uuid: "{{ pv_net_uuid }}"
           is_connected: true
-          trunked_vlan_list:
-          - 123
-        guest_os_id: string
-        serial_port_list:
-        - index: 123
-          is_connected: true
-        is_agent_vm: true
-        guest_tools:
-          nutanix_guest_tools:
-            state: string
-            version: string
-            ngt_state: string
-            credentials:
-              username: string
-              password: string
-            iso_mount_state: string
-            enabled_capability_list:
-            - string
-        vga_console_enabled: true
-        power_state: string
-        disable_branding: true
+        - ip_endpoint_list:
+          - ip_type: "DHCP"
+          subnet_reference:
+            kind: "subnet"
+            name: "ansible_network"
+            uuid: "{{ pv_net_uuid }}"
+        power_state: "ON"
       cluster_reference:
         kind: cluster
-        name: string
-        uuid: string (UUID)
-      name: string
-      availability_zone_reference:
-        kind: availability_zone
-        name: string
-        uuid: string (UUID)
-    api_version: 3.1.0
+        name: "{{ pe_cluster_details.json.name }}" 
+        uuid: "{{ pe_cluster_details.json.uuid }}" 
+      name: "ansible_nat_vm"
     metadata:
-      last_update_time: string (date-time)
-      use_categories_mapping: false
       kind: vm
-      uuid: string (UUID)
-      project_reference:
-        kind: project
-        name: string
-        uuid: string (UUID)
-      spec_version: 123
-      creation_time: string (date-time)
-      spec_hash: string
-      categories_mapping: {}
-      should_force_translate: true
-      owner_reference:
-        kind: user
-        name: string
-        uuid: string (UUID)
-      categories: {}
-      name: string
+  debugger: on_failed
+
+- name: Deploy VM 
+  import_tasks:
+   file: "../../common_tasks/submit_task_v3api.yaml"
+  vars:
+   endpoint_ip: "{{ pc_ip }}"
+   endpoint_api_path: "api/nutanix/v3/vms"
+   endpoint_api_method: "POST"
+   endpoint_api_body: '{{ vm_deploy_spec | to_json }}'
+   endpoint_api_task: "api/nutanix/v3/vms"
+   endpoint_api_password: "{{ pc_password }}"
+   endpoint_api_username: "admin"
+
+- set_fact:
+   vm_uuid: "{{ intent_status.json.metadata.uuid }}"

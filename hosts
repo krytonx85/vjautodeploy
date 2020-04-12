@@ -13,11 +13,16 @@ all:
    - "0.au.pool.ntp.org"
    nat_vars:
     centos_image_url: "http://apac-file.sre-labs.nutanix.com/Repo/Mounts/Autodeploy/CentOS7-04282018.qcow2"
+    public_net_details:
+     ip: "10.134.87.98"
+     prefix: 24
+     gateway:
+      - "10.134.84.1"
     pv_net_details:
      dns: "8.8.8.8"
      network: "192.168.100.0"
      gateway: "192.168.100.1"
-     prefix: "24"
+     prefix: 24
      range: "192.168.100.100 192.168.100.200"
      name: "ansible_net"
      vlan: "103"

@@ -1,0 +1,16 @@
+- name: Nat_Deploy
+  hosts: PE
+  tasks:
+  - set_fact:
+     centos_image_uuid: "a6ab5e60-85d7-4d5f-917c-23a5bc4424e2"
+  - import_tasks:
+     file: "./nat/tasks/pv_net_create.yml" 
+  - import_tasks:
+     file: "./nat/tasks/nat_vm_create.yml" 
+    
+     
+  
+
+
+    
+    

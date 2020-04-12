@@ -2,6 +2,13 @@
   import_tasks:
    file: "image_import.yml"
 
-- name: Centos Image Import
+- name: PVNet Create
+  import_tasks:
+  file: "nat_vm_create.yml"
+
+
+- name: Nat_VM_create
   import_tasks:
    file: "nat_vm_create.yml"
+
+
