@@ -22,3 +22,6 @@
    endpoint_api_task: "api/nutanix/v3/images"
    endpoint_api_password: "{{ pc_password }}"
    endpoint_api_username: "admin"
+
+- set_fact:
+   centos_image_uuid: "{{ intent_status.json.metadata.uuid }}"

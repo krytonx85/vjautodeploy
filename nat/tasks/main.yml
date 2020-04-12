@@ -1,3 +1,7 @@
-- name: Deploying PC
+- name: Centos Image Import
   import_tasks:
-   file: "main.yml"
+   file: "image_import.yml"
+
+- name: Centos Image Import
+  import_tasks:
+   file: "nat_vm_create.yml"
