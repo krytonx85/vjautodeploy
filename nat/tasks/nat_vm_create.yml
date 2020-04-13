@@ -14,6 +14,46 @@
   debugger: on_failed
   register: pe_cluster_details
 
+- name: Get network  List
+  uri:
+   url: https://127.0.0.1:9440/PrismGateway/services/rest/v2.0/networks
+   url_username: "{{ api_username }}"
+   url_password: "{{ pe_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+  register: network_list
+
+- debug:
+   msg: nat network name is "{{ nat_vars.public_net_details.network_name }}"
+
+
+
+- name: get NAT Public Networks' UUID
+  set_fact: 
+   nat_network_uuid: "{{ network_list.json | to_json | from_json | json_query(queryfilter) }}"
+  vars:
+   queryfilter: "entities[?contains(name,'{{ nat_vars.public_net_details.network_name }}')].uuid | [0]"
+  failed_when: not nat_network_uuid
+   
+
+- debug:
+   msg: network uuid for NAT VM Network Selected  "{{ nat_vars.public_net_details.network_name }}" is {{ nat_network_uuid }}
+
+- set_fact: 
+   nat_cloud_init: |
+    #cloud-config
+    users:
+     - name: root
+       lock_passwd: false
+       ssh-authorized-keys:
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6b1lX6Lt+lnIWhlhvKO7BFv2O8JpyWsqyVgh0DvUVytnE1Ob9aaYK11CIyVN60LlDO1a5bfPidLXfSlTyfj8PqgLHkwHCMsZe5tIM54FUWZmqOnnHFU0lXq3LYG+hqi8NVwQMR38c16/wxJKtCggr0AiA2We00sWScBVLLGmWq1R7aUKf6mdjNmT2Pr3pyXS5takZ6xLBCXLKDu8MvgOrlXIUNdpAIJ1R7lNkDCiHt/mhMaPWf15ywa/KElg2UFEvbu3o/sQkiWaItcBIWF35MgO+Xa8UBx5p9Iqd7ADk49KHzWhidd2tMyd4aMiBKdeTSI5QaKacnMC/d6VONocj
+    runcmd:
+     -  [ sh, -xc, 'echo centos > /etc/hostname && echo DEVICE=eth0 > /etc/sysconfig/network-scripts/ifcfg-eth0 && echo NM_CONTROLLED=no && echo BOOTPROTO=none >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo ONBOOT=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo USERCTL=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo IPV6INIT=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo TYPE=Ethernet >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo NETMASK={{ nat_vars.public_net_details.netmask }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo IPADDR={{ nat_vars.public_net_details.ip }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo GATEWAY={{ nat_vars.public_net_details.gateway[0] }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo ARP=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo nameserver {{ nat_vars.public_net_details.dns }} >> /etc/resolv.conf']
+     -  [sh, -xc, 'systemctl restart network' ]
+
+
+
 - set_fact:
    vm_deploy_spec:
     spec:
@@ -21,6 +61,9 @@
         num_threads_per_core: 1
         num_vcpus_per_socket: 2
         num_sockets: 2
+        guest_customization:
+         cloud_init:
+          user_data: "{{ nat_cloud_init | string | b64encode }}"
         memory_size_mib: 4000
         disk_list:
         - device_properties:
@@ -32,14 +75,11 @@
             name: "ansible_centos"
         nic_list:
         - ip_endpoint_list:
-          - ip_type: "STATIC"
-            ip: "{{ nat_vars.public_net_details.ip }}"
-            prefix_length: "{{ nat_vars.public_net_details.prefix }}"
-            gateway_address_list: "{{ nat_vars.public_net_details.gateway | to_json }}"
+          - ip_type: "DHCP"
           subnet_reference:
             kind: "subnet"
-            name: "ansible_network"
-            uuid: "{{ pv_net_uuid }}"
+            name: "{{ nat_vars.public_net_details.network_name }}"
+            uuid: "{{ nat_network_uuid }}"
           is_connected: true
         - ip_endpoint_list:
           - ip_type: "DHCP"
@@ -56,6 +96,8 @@
     metadata:
       kind: vm
   debugger: on_failed
+
+- local_action: copy content={{ vm_deploy_spec | to_json }} dest=ansible_nat_vm.json
 
 - name: Deploy VM 
   import_tasks:

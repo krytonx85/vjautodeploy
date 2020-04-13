@@ -2,15 +2,30 @@
   hosts: PE
   tasks:
   - set_fact:
-     centos_image_uuid: "a6ab5e60-85d7-4d5f-917c-23a5bc4424e2"
-  - import_tasks:
-     file: "./nat/tasks/pv_net_create.yml" 
+     centos_image_uuid: "39b2a03d-daaa-4779-b0ad-e0099fcc3cca"
+  # - import_tasks:
+  #    file: "./nat/tasks/pv_net_create.yml" 
+  - set_fact:
+     pv_net_uuid: "86686e98-a8b0-4b5d-ad70-41cdcb451af5"
   - import_tasks:
      file: "./nat/tasks/nat_vm_create.yml" 
-    
-     
-  
 
+
+
+
+  # - debug: 
+  #    msg:  this is variable {{  nat_vars.pv_net_details.prefix }}
+     
+  #   # pv_net_details:
+  #   #  dns: "8.8.8.8"
+  #   #  network: "192.168.100.0"
+  #   #  gateway: "192.168.100.1"
+  #   #  prefix: 24
+  #   #  range: "192.168.100.100 192.168.100.200"
+  #   #  name: "ansible_net"
+  #   #  vlan: "103"
+
+# - [ sh, -xc, 'echo centos > /etc/hostname && echo DEVICE=eth0 > /etc/sysconfig/network-scripts/ifcfg-eth0 && echo BOOTPROTO=none >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo ONBOOT=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo USERCTL=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo IPV6INIT=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo TYPE=Ethernet >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo NETMASK=255.255.255.255 >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo IPADDR=127.0.0.2 >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo GATEWAY=127.0.0.1 >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo ARP=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo nameserver 8.8.8.8 >> /etc/resolv.conf']
 
     
     

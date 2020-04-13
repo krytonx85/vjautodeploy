@@ -14,10 +14,12 @@ all:
    nat_vars:
     centos_image_url: "http://apac-file.sre-labs.nutanix.com/Repo/Mounts/Autodeploy/CentOS7-04282018.qcow2"
     public_net_details:
+     network_name: "Rx-Automation-Network"
      ip: "10.134.87.98"
-     prefix: 24
+     netmask: "255.255.252.0"
      gateway:
       - "10.134.84.1"
+     dns: "8.8.8.8"
     pv_net_details:
      dns: "8.8.8.8"
      network: "192.168.100.0"
@@ -26,4 +28,4 @@ all:
      range: "192.168.100.100 192.168.100.200"
      name: "ansible_net"
      vlan: "103"
-    
+ 

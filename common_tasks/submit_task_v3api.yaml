@@ -12,7 +12,7 @@
    body: "{{ endpoint_api_body }}"
    follow_redirects: all
    status_code: [200,202]
-  debugger: always
+  debugger: on_failed
   register: intent_status
 
 
@@ -27,17 +27,26 @@
    follow_redirects: none
    method: 'GET'
   register: v3_progress
-  debugger: always
-  until: v3_progress.json|json_query('status.state')|upper is  regex ('COMPLETE')
-  failed_when: v3_progress.json|json_query('status.state')|upper is  regex ('ERROR')
+  debugger: on_failed
+  until: v3_progress.json|json_query('status.state') is  regex ('COMPLETE|ERROR')
+  failed_when: v3_progress.json|json_query('status.state') is  regex ('ERROR')
   retries: 300
   delay: 20
 
 # - debug:
 #    msg: status of entity upload status {{ v3_progress.json|json_query('status.state')|upper }}
 
+# - name: sleep for 60 seconds and continue with play
+#   wait_for:
+#     timeout: 60
+#   delegate_to: localhost
+
+
 # - debug:
 #    msg: status completed {{ v3_progress.json|json_query('status.state')|upper is  regex ('COMPLETE') }}
+
+# - debug:
+#    msg: status error {{ v3_progress.json|json_query('status.state')|upper is  regex ('ERROR') }}
 
 
 # - name: sleep for 600 seconds and continue with play
