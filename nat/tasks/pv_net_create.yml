@@ -1,4 +1,16 @@
 - set_fact:
+   pv_network: "{{nat_vars.pv_net_details.network}}/{{nat_vars.pv_net_details.netmask}}"
+
+- debug:
+   var: pv_network
+
+- set_fact:
+   pv_network_prefix: "{{ pv_network | ipaddr('prefix')}}"
+
+- debug:
+   var: pv_network_prefix
+
+- set_fact:
    network_create_spec:
     ip_config:
       default_gateway: "{{nat_vars.pv_net_details.gateway}}"
@@ -7,7 +19,7 @@
        domain_name_servers: "{{nat_vars.pv_net_details.dns}}"
       pool:
       - range: "{{nat_vars.pv_net_details.range}}"
-      prefix_length: "{{nat_vars.pv_net_details.prefix}}"
+      prefix_length: "{{pv_network_prefix | int }}"
     name: "{{nat_vars.pv_net_details.name}}"
     network_type: EXTERNAL
     vlan_id: "{{nat_vars.pv_net_details.vlan}}"

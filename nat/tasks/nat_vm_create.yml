@@ -49,11 +49,9 @@
        ssh-authorized-keys:
         - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6b1lX6Lt+lnIWhlhvKO7BFv2O8JpyWsqyVgh0DvUVytnE1Ob9aaYK11CIyVN60LlDO1a5bfPidLXfSlTyfj8PqgLHkwHCMsZe5tIM54FUWZmqOnnHFU0lXq3LYG+hqi8NVwQMR38c16/wxJKtCggr0AiA2We00sWScBVLLGmWq1R7aUKf6mdjNmT2Pr3pyXS5takZ6xLBCXLKDu8MvgOrlXIUNdpAIJ1R7lNkDCiHt/mhMaPWf15ywa/KElg2UFEvbu3o/sQkiWaItcBIWF35MgO+Xa8UBx5p9Iqd7ADk49KHzWhidd2tMyd4aMiBKdeTSI5QaKacnMC/d6VONocj
     runcmd:
-     -  [ sh, -xc, 'echo centos > /etc/hostname && echo DEVICE=eth0 > /etc/sysconfig/network-scripts/ifcfg-eth0 && echo NM_CONTROLLED=no && echo BOOTPROTO=none >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo ONBOOT=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo USERCTL=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo IPV6INIT=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo TYPE=Ethernet >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo NETMASK={{ nat_vars.public_net_details.netmask }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo IPADDR={{ nat_vars.public_net_details.ip }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo GATEWAY={{ nat_vars.public_net_details.gateway[0] }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo ARP=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo nameserver {{ nat_vars.public_net_details.dns }} >> /etc/resolv.conf']
-     -  [sh, -xc, 'systemctl restart network' ]
-
-
-
+     - [ sh, -xc, 'echo centos > /etc/hostname && echo DEVICE=eth0 > /etc/sysconfig/network-scripts/ifcfg-eth0 && echo NM_CONTROLLED=no && echo BOOTPROTO=none >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo ONBOOT=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo USERCTL=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo IPV6INIT=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo TYPE=Ethernet >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo NETMASK={{ nat_vars.public_net_details.netmask }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo IPADDR={{ nat_vars.public_net_details.ip }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo GATEWAY={{ nat_vars.public_net_details.gateway[0] }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo ARP=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo nameserver {{ nat_vars.public_net_details.dns }} >> /etc/resolv.conf']
+     - [ sh, -xc, 'echo centos > /etc/hostname && echo DEVICE=eth1 > /etc/sysconfig/network-scripts/ifcfg-eth1 && echo NM_CONTROLLED=no && echo BOOTPROTO=none >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo ONBOOT=yes >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo USERCTL=no >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo IPV6INIT=no >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo TYPE=Ethernet >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo NETMASK={{ nat_vars.pv_net_details.netmask }} >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo IPADDR={{ nat_vars.pv_net_details.gateway }} >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo GATEWAY={{ nat_vars.pv_net_details.gateway }} >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo ARP=yes >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo nameserver {{ nat_vars.pv_net_details.dns }} >> /etc/resolv.conf']
+     - [ sh, -xc, 'systemctl restart network' ]
 - set_fact:
    vm_deploy_spec:
     spec:
@@ -63,7 +61,7 @@
         num_sockets: 2
         guest_customization:
          cloud_init:
-          user_data: "{{ nat_cloud_init | string | b64encode }}"
+          user_data: "{{ nat_cloud_init | string |  b64encode }}"
         memory_size_mib: 4000
         disk_list:
         - device_properties:
@@ -113,3 +111,8 @@
 
 - set_fact:
    vm_uuid: "{{ intent_status.json.metadata.uuid }}"
+
+- name: sleep for 90 seconds and continue with play
+  wait_for:
+    timeout: 90
+  delegate_to: localhost
