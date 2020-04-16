@@ -64,7 +64,7 @@
    force_basic_auth: true
    return_content: true
    body_format: json
-   method: "POST"
+   method: "GET"
    body: '{"state": "ENABLE"}'
    follow_redirects: all
    status_code: [200,202]

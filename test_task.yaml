@@ -1,16 +1,20 @@
-- name: Nat_Deploy
-  hosts: PE
-  tasks:
-   - set_fact:
-      centos_image_uuid: "39b2a03d-daaa-4779-b0ad-e0099fcc3cca"
-  # - import_tasks:
-  #    file: "./nat/tasks/pv_net_create.yml" 
-   - set_fact:
-      pv_net_uuid: "6d032ad8-3be0-4334-880a-be06a49fe2f8"
-   - import_tasks:
-      file: "./nat/tasks/nat_vm_create.yml" 
+# - name: Nat_Deploy
+#   hosts: PE
+#   tasks:
+#    - set_fact:
+#       centos_image_uuid: "39b2a03d-daaa-4779-b0ad-e0099fcc3cca"
+#   # - import_tasks:
+#   #    file: "./nat/tasks/pv_net_create.yml" 
+#    - set_fact:
+#       pv_net_uuid: "6d032ad8-3be0-4334-880a-be06a49fe2f8"
+#    - import_tasks:
+#       file: "./nat/tasks/nat_vm_create.yml" 
 
-
+ - name: pc_post_deploy_test
+   hosts: PE
+   tasks:
+    - import_tasks:
+       file: "./pc/tasks/pc_postdeploy.yaml" 
 
 
   # - debug: 
