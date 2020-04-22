@@ -10,11 +10,16 @@
 #    - import_tasks:
 #       file: "./nat/tasks/nat_vm_create.yml" 
 
+ 
  - name: pc_post_deploy_test
    hosts: PE
    tasks:
+    - set_fact:
+       pv_net_uuid: "0aca9ecd-c81c-41b9-9169-abeb927a2733"
+    - set_fact:
+       centos_image_uuid: "89b4eff2-bfe7-4985-831f-cdbb23d80395"
     - import_tasks:
-       file: "./pc/tasks/pc_postdeploy.yaml" 
+       file: "./nat/tasks/nat_vm_create.yml" 
 
 
   # - debug: 

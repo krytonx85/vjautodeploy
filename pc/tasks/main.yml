@@ -20,7 +20,7 @@
   register: network_list
 
 - debug:
-   msg: network name is "{{ pc_network_name }}"
+   msg: network name is "{{ pc_deploy_vars.network_name }}"
 
 - debug:
    msg: network list is "{{ network_list.json }}"
@@ -30,10 +30,10 @@
   set_fact: 
    network_uuid: "{{ network_list.json | to_json | from_json | json_query(queryfilter) }}"
   vars:
-   queryfilter: "entities[?contains(name,'{{ pc_network_name }}')].uuid | [0]"
+   queryfilter: "entities[?contains(name,'{{ pc_deploy_vars.network_name }}')].uuid | [0]"
 
 - debug:
-   msg: network uuid for PC Network Selected  "{{pc_network_name}}" is {{ network_uuid }}
+   msg: network uuid for PC Network Selected  "{{pc_deploy_vars.network_name}}" is {{ network_uuid }}
 
 - set_fact:
    pc_latest_dict: "{{ pc_downloads.json | to_json| from_json  | json_query(queryfilter) }}"
@@ -75,11 +75,11 @@
        dns_server_ip_list: "{{ ansible_dns.nameservers }}"
        nic_list:
        - ip_list:
-         - "{{ pc_ip }}"
+         - "{{ pc_deploy_vars.pc_ip }}"
          network_configuration:
           network_uuid: "{{ network_uuid }}"
-          subnet_mask: "255.255.252.0"
-          default_gateway: "10.134.84.1"
+          subnet_mask: "{{ pc_deploy_vars.pc_subnet }}"
+          default_gateway: "{{ pc_deploy_vars.pc_gateway }}"
 
    
    
@@ -110,12 +110,12 @@
 - set_fact:
    pc_def_password_change:
     oldPassword: "Nutanix/4u"
-    newPassword: "{{ pc_password }}"
+    newPassword: "{{ pc_deploy_vars.pc_password }}"
 
 
 - name: Changing the admin password
   uri:
-   url: https://{{ pc_ip }}:9440/PrismGateway/services/rest/v1/utils/change_default_system_password
+   url: https://{{ pc_deploy_vars.pc_ip }}:9440/PrismGateway/services/rest/v1/utils/change_default_system_password
    url_username: "admin"
    url_password: "Nutanix/4u"
    validate_certs: false
@@ -133,10 +133,10 @@
 - set_fact:
    pc_register_def:
     username: 'admin'
-    password: '{{ pc_password }}'
+    password: '{{ pc_deploy_vars.pc_password }}'
     port: null
     ipAddresses: 
-    - "{{ pc_ip }}"
+    - "{{ pc_deploy_vars.pc_ip }}"
   tags:
    - pc_register_step
 

@@ -2,15 +2,15 @@
 
 - name: configure NTP for PC
   uri: 
-   url: https://{{ pc_ip }}:9440/PrismGateway/services/rest/v1/cluster/ntp_servers/add_list
+   url: https://{{ pc_deploy_vars.pc_ip }}:9440/PrismGateway/services/rest/v1/cluster/ntp_servers/add_list
    url_username: "admin"
-   url_password: "{{ pc_password }}"
+   url_password: "{{ pc_deploy_vars.pc_password }}"
    validate_certs: false
    force_basic_auth: true
    return_content: true
    body_format: json
    method: "POST"
-   body: "{{ pc_ntp_list | to_json }}"
+   body: "{{ pc_deploy_vars.pc_ntp_list | to_json }}"
    follow_redirects: all
    status_code: [200,202]                     
   register: task_status
@@ -19,9 +19,9 @@
   
 - name: enable OSS service
   uri: 
-   url: https://{{ pc_ip }}:9440/api/nutanix/v3/services/oss
+   url: https://{{ pc_deploy_vars.pc_ip }}:9440/api/nutanix/v3/services/oss
    url_username: "admin"
-   url_password: "{{ pc_password }}"
+   url_password: "{{ pc_deploy_vars.pc_password }}"
    validate_certs: false
    force_basic_auth: true
    return_content: true
@@ -37,9 +37,9 @@
 
 - name: enable KARBON service
   uri: 
-   url: https://{{ pc_ip }}:9440/PrismGateway/services/rest/v1/genesis
+   url: https://{{ pc_deploy_vars.pc_ip }}:9440/PrismGateway/services/rest/v1/genesis
    url_username: "admin"
-   url_password: "{{ pc_password }}"
+   url_password: "{{ pc_deploy_vars.pc_password }}"
    validate_certs: false
    force_basic_auth: true
    return_content: true
@@ -57,9 +57,9 @@
 
 - name: checking OSS service enabled
   uri: 
-   url: https://{{ pc_ip }}:9440/api/nutanix/v3/services/oss/status?__{{ ansible_date_time.epoch }}
+   url: https://{{ pc_deploy_vars.pc_ip }}:9440/api/nutanix/v3/services/oss/status?__{{ ansible_date_time.epoch }}
    url_username: "admin"
-   url_password: "{{ pc_password }}"
+   url_password: "{{ pc_deploy_vars.pc_password }}"
    validate_certs: false
    force_basic_auth: true
    return_content: true

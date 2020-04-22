@@ -15,12 +15,12 @@
   import_tasks:
    file: "../../common_tasks/submit_task_v3api.yaml"
   vars:
-   endpoint_ip: "{{ pc_ip }}"
+   endpoint_ip: "{{ pc_deploy_vars.pc_ip }}"
    endpoint_api_path: "api/nutanix/v3/images"
    endpoint_api_method: "POST"
    endpoint_api_body: '{{ image_upload_spec | to_json }}'
    endpoint_api_task: "api/nutanix/v3/images"
-   endpoint_api_password: "{{ pc_password }}"
+   endpoint_api_password: "{{ pc_deploy_vars.pc_password }}"
    endpoint_api_username: "admin"
 
 - set_fact:

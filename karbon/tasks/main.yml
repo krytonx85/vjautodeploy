@@ -1,9 +1,9 @@
 
 # - name: enable karbon service
 #   uri: 
-#    url: https://{{ pc_ip }}:9440/PrismGateway/services/rest/v1/genesis
+#    url: https://{{ pc_deploy_vars.pc_ip }}:9440/PrismGateway/services/rest/v1/genesis
 #    url_username: "admin"
-#    url_password: "{{ pc_password }}"
+#    url_password: "{{ pc_deploy_vars.pc_password }}"
 #    validate_certs: false
 #    force_basic_auth: true
 #    return_content: true
@@ -18,7 +18,7 @@
 # Below api call does not work
 #- name: check karbon service
 #   uri:
-#     url: https://{{ pc_ip }}:9440/karbon/version
+#     url: https://{{ pc_deploy_vars.pc_ip }}:9440/karbon/version
 #     url_username: "admin"
 #     url_password: "SREs4eva!"
 #     validate_certs: false
