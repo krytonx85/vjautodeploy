@@ -3,7 +3,18 @@
   tasks:
   - import_role:
      name: nat
-  
+- name: nat_configure
+  hosts: nat_vm
+  tasks:
+  - import_tasks:
+      file: ./nat/tasks/nat_vm_configure.yml
+    notify:
+     - iptables_changed
+  handlers:
+   - name: iptables_changed
+     service:
+      name: iptables
+      state: restarted
 
 
     

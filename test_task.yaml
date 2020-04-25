@@ -11,15 +11,37 @@
 #       file: "./nat/tasks/nat_vm_create.yml" 
 
  
- - name: pc_post_deploy_test
-   hosts: PE
-   tasks:
-    - set_fact:
-       pv_net_uuid: "0aca9ecd-c81c-41b9-9169-abeb927a2733"
-    - set_fact:
-       centos_image_uuid: "89b4eff2-bfe7-4985-831f-cdbb23d80395"
-    - import_tasks:
-       file: "./nat/tasks/nat_vm_create.yml" 
+#  - name: pc_post_deploy_test
+#    hosts: PE
+#    tasks:
+#     - set_fact:
+#        pv_net_uuid: "80bb2dfd-28e3-4a35-8aab-d953099df62f"
+#     - set_fact:
+#        centos_image_uuid: "79e8be98-2a52-4e6e-9168-78848e9e9df5"
+#     - import_tasks:
+#        file: "./nat/tasks/nat_vm_create.yml" 
+
+   - name: add_nat_host
+     hosts: PE
+     tasks:
+      - add_host:
+         name: nat_vm
+         ansible_host: "{{ nat_vars.public_net_details.ip }}"
+         ansible_user: "root"
+         ansible_ssh_pass: "nutanix/4u"
+
+   - name: nat_configure
+     hosts: nat_vm
+     tasks:
+      - import_tasks:
+         file: ./nat/tasks/nat_vm_configure.yml
+        notify:
+        - iptables_changed
+     handlers:
+      - name: iptables_changed
+        service:
+          name: iptables
+          state: restarted
 
 
   # - debug: 

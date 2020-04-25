@@ -1,5 +1,5 @@
 - name: be sure firewalld is installed
-  dnf: 
+  yum: 
    name: "firewalld"
    state: "installed"
   tags:
@@ -23,3 +23,123 @@
    - install
    - atomic
    - firewalld
+
+- name: be sure iptables is installed
+  yum: 
+   name: "iptables"
+   state: "installed"
+  tags:
+   - install
+   - iptables
+
+- name: iptables flush filter
+  iptables:
+    chain: "{{ item }}"
+    flush: yes
+  with_items:  [ 'INPUT', 'FORWARD', 'OUTPUT' ]
+  
+- name: enable forwarding
+  sysctl:
+   name: net.ipv4.ip_forward
+   value: '1'
+   state: present
+  tags:
+   - install
+   - iptables
+
+- name: Set the policy for the FORWARD chain to DROP
+  iptables:
+    chain: FORWARD
+    policy: DROP
+
+- name: Set the policy for the INPUT chain to Accept
+  iptables:
+    chain: INPUT
+    policy: ACCEPT
+
+- name: Allow related and established connections
+  iptables:
+    chain: FORWARD
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+  become: yes
+
+- name: Allow PC to internal network 1 pv_net_details
+  iptables:
+   destination_port: "{{ item }}"
+   destination: "{{ hostvars['PE']['nat_vars']['pv_net_details']['network'] }}/{{ hostvars['PE']['nat_vars']['pv_net_details']['netmask']}}"
+   chain: "FORWARD"
+   action: "append"
+   in_interface: "eth0"
+   out_interface: "eth1"
+   jump: ACCEPT
+   protocol: tcp
+   source: "{{ hostvars['PE']['pc_deploy_vars']['pc_ip'] }}"
+  loop: 
+    - 22
+    - 53
+    - 443
+    - 2379
+    - 5000
+    - 31002
+
+
+
+
+- name: Allow PC to external Object Network 2
+  iptables:
+   destination_port: "{{ item }}"
+   destination: "{{ hostvars['PE']['nat_vars']['pv_net_details_2']['network'] }}/{{ hostvars['PE']['nat_vars']['pv_net_details_2']['netmask']}}"
+   chain: "FORWARD"
+   action: "append"
+   in_interface: "eth0"
+   out_interface: "eth2"
+   jump: ACCEPT
+   protocol: tcp
+   source: "{{ hostvars['PE']['pc_deploy_vars']['pc_ip'] }}"
+  loop:
+   - 81
+   - 5553
+
+- name: Allow MSP VMs to ISCSI and PE endpoints and 2009 for oc
+  iptables:
+   destination_port: "{{ item }}"
+   source: "{{ hostvars['PE']['nat_vars']['pv_net_details']['network'] }}/{{ hostvars['PE']['nat_vars']['pv_net_details_2']['netmask']}}"
+   chain: "FORWARD"
+   action: "append"
+   in_interface: "eth1"
+   out_interface: "eth0"
+   jump: ACCEPT
+   protocol: tcp
+  loop:
+   - 3205
+   - 3260
+   - 9440
+   - 2009
+
+- name: Allow MSP VMs to DNS
+  iptables:
+   destination_port: "53"
+   source: "{{ hostvars['PE']['nat_vars']['pv_net_details']['network'] }}/{{ hostvars['PE']['nat_vars']['pv_net_details']['netmask']}}"
+   destination: "{{ hostvars['PE']['nat_vars']['pv_net_details']['dns'] }}"
+   chain: "FORWARD"
+   action: "append"
+   in_interface: "eth1"
+   out_interface: "eth0"
+   jump: ACCEPT
+   protocol: "{{ item }}"
+  loop:
+    - "tcp"
+    - "udp"
+
+- name: Allow MSP VMs to NTP
+  iptables:
+   destination_port: "123"
+   source: "{{ hostvars['PE']['nat_vars']['pv_net_details']['network'] }}/{{ hostvars['PE']['nat_vars']['pv_net_details']['netmask']}}"
+   chain: "FORWARD"
+   action: "append"
+   in_interface: "eth1"
+   out_interface: "eth0"
+   jump: ACCEPT
+   protocol: udp
+   

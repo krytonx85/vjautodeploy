@@ -45,12 +45,14 @@
     #cloud-config
     users:
      - name: root
+       passwd: $1$wBi2Y68t$1ZHcaFD0afx8H1hNUn3PZ1
        lock_passwd: false
        ssh-authorized-keys:
         - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6b1lX6Lt+lnIWhlhvKO7BFv2O8JpyWsqyVgh0DvUVytnE1Ob9aaYK11CIyVN60LlDO1a5bfPidLXfSlTyfj8PqgLHkwHCMsZe5tIM54FUWZmqOnnHFU0lXq3LYG+hqi8NVwQMR38c16/wxJKtCggr0AiA2We00sWScBVLLGmWq1R7aUKf6mdjNmT2Pr3pyXS5takZ6xLBCXLKDu8MvgOrlXIUNdpAIJ1R7lNkDCiHt/mhMaPWf15ywa/KElg2UFEvbu3o/sQkiWaItcBIWF35MgO+Xa8UBx5p9Iqd7ADk49KHzWhidd2tMyd4aMiBKdeTSI5QaKacnMC/d6VONocj
     runcmd:
-     - [ sh, -xc, "echo centos > /etc/hostname && echo DEVICE=eth0 > /etc/sysconfig/network-scripts/ifcfg-eth0 && echo NM_CONTROLLED=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 & echo BOOTPROTO=none >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo ONBOOT=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo USERCTL=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo IPV6INIT=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo TYPE=Ethernet >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo NETMASK={{ nat_vars.public_net_details.netmask }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo IPADDR={{ nat_vars.public_net_details.ip }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo GATEWAY={{ nat_vars.public_net_details.gateway[0] }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo ARP=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo nameserver {{ nat_vars.public_net_details.dns }} >> /etc/resolv.conf"]
+     - [ sh, -xc, "echo centos > /etc/hostname && echo DEVICE=eth0 > /etc/sysconfig/network-scripts/ifcfg-eth0 && echo NM_CONTROLLED=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo BOOTPROTO=none >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo ONBOOT=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo USERCTL=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo IPV6INIT=no >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo TYPE=Ethernet >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo NETMASK={{ nat_vars.public_net_details.netmask }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo IPADDR={{ nat_vars.public_net_details.ip }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo GATEWAY={{ nat_vars.public_net_details.gateway[0] }} >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo ARP=yes >> /etc/sysconfig/network-scripts/ifcfg-eth0 && echo nameserver {{ nat_vars.public_net_details.dns }} >> /etc/resolv.conf"]
      - [ sh, -xc, "echo centos > /etc/hostname && echo DEVICE=eth1 > /etc/sysconfig/network-scripts/ifcfg-eth1 && echo NM_CONTROLLED=no >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo BOOTPROTO=none >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo ONBOOT=yes >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo USERCTL=no >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo IPV6INIT=no >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo TYPE=Ethernet >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo NETMASK={{ nat_vars.pv_net_details.netmask }} >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo IPADDR={{ nat_vars.pv_net_details.gateway }} >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo ARP=yes >> /etc/sysconfig/network-scripts/ifcfg-eth1 && echo nameserver {{ nat_vars.pv_net_details.dns }} >> /etc/resolv.conf"]
+     - [ sh, -xc, "echo centos > /etc/hostname && echo DEVICE=eth2 > /etc/sysconfig/network-scripts/ifcfg-eth2 && echo NM_CONTROLLED=no >> /etc/sysconfig/network-scripts/ifcfg-eth2 && echo BOOTPROTO=none >> /etc/sysconfig/network-scripts/ifcfg-eth2 && echo ONBOOT=yes >> /etc/sysconfig/network-scripts/ifcfg-eth2 && echo USERCTL=no >> /etc/sysconfig/network-scripts/ifcfg-eth2 && echo IPV6INIT=no >> /etc/sysconfig/network-scripts/ifcfg-eth2 && echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth2 && echo TYPE=Ethernet >> /etc/sysconfig/network-scripts/ifcfg-eth2 && echo NETMASK={{ nat_vars.pv_net_details_2.netmask }} >> /etc/sysconfig/network-scripts/ifcfg-eth2 && echo IPADDR={{ nat_vars.pv_net_details_2.gateway }} >> /etc/sysconfig/network-scripts/ifcfg-eth2 && echo ARP=yes >> /etc/sysconfig/network-scripts/ifcfg-eth2 && echo nameserver {{ nat_vars.pv_net_details_2.dns }} >> /etc/resolv.conf"]
      - [ sh, -xc, "systemctl restart network" ]
 - set_fact:
    vm_deploy_spec:
@@ -85,6 +87,12 @@
             kind: "subnet"
             name: "ansible_network"
             uuid: "{{ pv_net_uuid }}"
+        - ip_endpoint_list:
+          - ip_type: "DHCP"
+          subnet_reference:
+            kind: "subnet"
+            name: "ansible_network_2"
+            uuid: "{{ pv_net_uuid_2 }}"  
         power_state: "ON"
       cluster_reference:
         kind: cluster
@@ -118,5 +126,11 @@
   delegate_to: localhost
 
 
+- name: Add host to group 'just_created' with variable foo=42
+  add_host:
+    name: nat_vm
+    ansible_host: "{{ nat_vars.public_net_details.ip }}"
+    ansible_user: "root"
+    ansible_ssh_pass: "nutanix/4u"
 
 

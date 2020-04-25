@@ -47,3 +47,55 @@
 
 - debug: 
    msg: network created with {{ pv_net_uuid }}
+
+
+
+- set_fact:
+   pv_network: "{{nat_vars.pv_net_details_2.network}}/{{nat_vars.pv_net_details_2.netmask}}"
+
+- debug:
+   msg: createing second network {{ pv_network }}
+
+- set_fact:
+   pv_network_prefix: "{{ pv_network | ipaddr('prefix')}}"
+
+- debug:
+   var: pv_network_prefix
+
+- set_fact:
+   network_create_spec:
+    ip_config:
+      default_gateway: "{{nat_vars.pv_net_details_2.gateway}}"
+      network_address: "{{nat_vars.pv_net_details_2.network}}"
+      dhcp_options:
+       domain_name_servers: "{{nat_vars.pv_net_details_2.dns}}"
+      pool:
+      - range: "{{nat_vars.pv_net_details_2.range}}"
+      prefix_length: "{{pv_network_prefix | int }}"
+    name: "{{nat_vars.pv_net_details_2.name}}"
+    network_type: EXTERNAL
+    vlan_id: "{{nat_vars.pv_net_details_2.vlan}}"
+
+
+- name: Create ansible private network network
+  uri:
+   url: https://{{ ansible_host }}:9440/api/nutanix/v2.0/networks
+   url_username: "{{ api_username }}"
+   url_password: "{{ pe_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+   body_format: json
+   method: "POST"
+   body: "{{ network_create_spec | to_json }}"
+   follow_redirects: all
+   status_code: [200,201,202]
+  debugger: on_failed
+  register: pv_network_create_status
+
+
+- set_fact:
+   pv_net_uuid_2: "{{ pv_network_create_status.json.network_uuid }}"
+
+- debug: 
+   msg: 2nd pvt network created with {{ pv_net_uuid_2 }}
