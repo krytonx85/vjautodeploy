@@ -12,3 +12,6 @@
    file: "nat_vm_create.yml"
 
 
+##the main playbook will then call nat_vm_configure after changing host to the nat vmadm
+
+

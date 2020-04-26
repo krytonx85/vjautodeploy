@@ -1,0 +1,98 @@
+
+
+- name: Get PE Cluster Details
+  uri:
+   url: https://{{ ansible_host }}:9440/PrismGateway/services/rest/v2.0/cluster
+   url_username: "{{ api_username }}"
+   url_password: "{{ pe_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+   body_format: json
+   method: "GET"
+   follow_redirects: all
+   status_code: [200,201,202]
+  debugger: on_failed
+  register: pe_cluster_details
+
+- name: Get PE Network Details
+  uri:
+   url: https://{{ ansible_host }}:9440/PrismGateway/services/rest/v2.0/networks
+   url_username: "{{ api_username }}"
+   url_password: "{{ pe_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: true
+   body_format: json
+   method: "GET"
+   follow_redirects: all
+   status_code: [200,201,202]
+  debugger: on_failed
+  register: pe_network_details
+
+
+- name: get internal network uuid
+  set_fact: 
+   pvt_obj_uuid: "{{ pe_network_details.json | to_json | from_json | json_query(queryfilter) }}"
+  vars:
+   queryfilter: "entities[?name=='ansible_net'].uuid | [0]"
+
+
+- name: get external network uuid
+  set_fact: 
+   ext_obj_uuid: "{{ pe_network_details.json | to_json | from_json | json_query(queryfilter) }}"
+  vars:
+   queryfilter: "entities[?name=='ansible_net_2'].uuid | [0]"
+
+- name: get pvt network uuid
+  set_fact: 
+   oss_deploy_spec:
+    verify: false
+    api_version: '3.0'
+    metadata:
+      kind: "objectstore"
+    spec:
+      name: "OSS-1"
+      resources:
+        client_access_network_reference:
+          kind: "subnet"
+          uuid: "{{ ext_obj_uuid }}"
+        buckets_infra_network_dns: "192.168.100.11"
+        domain: "buckets.nutanix.com"
+        buckets_infra_network_vip: "192.168.100.10"
+        aggregate_resources:
+          total_memory_size_mib: 98304
+          total_capacity_gib: 1024
+          total_vcpu_count: 30
+        buckets_infra_network_reference:
+          kind: "subnet"
+          uuid: "{{  pvt_obj_uuid }}"
+        cluster_reference:
+          kind: "cluster"
+          uuid: "{{ pe_cluster_details.json.uuid  }}"
+        client_access_network_ip_list:
+        - "192.168.200.10"
+        - "192.168.200.11"
+        - "192.168.200.12"
+        - "192.168.200.13"
+      description: "OSSDeployerAnsible"
+    timeout: 60
+    headers:
+     content-type: "application/json"
+
+
+- name: Submitting oss deploy spec
+  uri:
+   url: https://{{ pc_deploy_vars.pc_ip }}:9440/oss/api/nutanix/v3/objectstores
+   url_username: "admin"
+   url_password: "{{ pc_deploy_vars.pc_password }}"
+   validate_certs: false
+   force_basic_auth: true
+   return_content: yes
+   body_format: json
+   method: "POST"
+   body: "{{ oss_deploy_spec | to_json }}"
+   follow_redirects: all
+   status_code: [200,202]
+  debugger: on_failed
+  register: intent_status
